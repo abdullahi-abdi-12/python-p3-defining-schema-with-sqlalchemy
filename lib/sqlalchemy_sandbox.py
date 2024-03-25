@@ -1,12 +1,33 @@
 #!/usr/bin/env python3
 
-from sqlalchemy import Column, Integer, String, create_engine
-from sqlalchemy.ext.declarative import declarative_base
+from faker import Faker
+import random
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-Base = declarative_base()
+from db import Game
 
-class Student(Base):
-    pass
+fake = Faker()
 
 if __name__ == '__main__':
-    pass
+    
+    engine = create_engine('sqlite:///seed_db.db')
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    session.query(Game).delete()
+    session.commit()
+
+    print("Seeding games...")
+
+    games = [
+        Game(
+            title=fake.name(),
+            genre=fake.word(),
+            platform=fake.word(),
+            price=random.randint(0, 60),
+        ) for i in range(50)
+    ]
+
+    session.bulk_save_objects(games)
+    session.commit()
